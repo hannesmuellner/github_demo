@@ -1,0 +1,31 @@
+version: "3"
+services: #or containers
+  tweet_container:
+    build: tweet_collector/ #folder to build our own container image from
+    depends_on:
+      - mongo_container
+
+  mongo_container:
+    image: mongo:3.6
+    ports:
+      - 27017:27017
+
+  etl_container:
+    build: etl_job/
+    depends_on:
+      - mongo_container
+      - pg_container
+
+  pg_container:
+    image: postgres:13.0 #<--name of image on DockerHub directly!
+    ports:
+      - 5432:5432
+      # Port OUTSIDE Container:Port INSIDE Container
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+
+  slackbot_container:
+    build: slack_bot/
+    depends_on:
+      - pg_container
